@@ -1,0 +1,20 @@
+# Environment & Secret API Keys (Security)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Local Uploads & Temporary Media
+uploads/*
+!uploads/.gitkeep
+
+# Local Logs & OS Cache
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini

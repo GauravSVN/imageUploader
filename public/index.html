@@ -2,15 +2,62 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PixelVault Pro | Ultimate Glassmorphism Image Store & Dual Cloud Uploader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  
+  <!-- Primary SEO Meta Tags -->
+  <title>PixelVault Pro | Free Cloud Image Hosting, Studio Editor & CDN Share</title>
+  <meta name="title" content="PixelVault Pro | Free Cloud Image Hosting, Studio Editor & CDN Share">
+  <meta name="description" content="Host, compress, and share images globally with PixelVault Pro. Features AI studio filters, aspect-ratio cropping, Cloudinary CDN delivery, QR codes, and password vault protection.">
+  <meta name="keywords" content="image store, cloud image hosting, cloudinary uploader, free image host, image editor, online image cropper, webp converter, qr code generator, password protected images">
+  <meta name="author" content="PixelVault Pro">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#030712">
+  <link rel="canonical" href="http://localhost:3000/">
+
+  <!-- Open Graph / Facebook / WhatsApp Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:3000/">
+  <meta property="og:title" content="PixelVault Pro - Ultimate Cloud Image Store & Studio">
+  <meta property="og:description" content="Ultra-fast image hosting, WebP compression, AI filters, and instant Cloudinary CDN delivery.">
+  <meta property="og:image" content="images/logo.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="http://localhost:3000/">
+  <meta name="twitter:title" content="PixelVault Pro - Cloud Image Hosting & Studio">
+  <meta name="twitter:description" content="Host, edit, and share high-speed images with instant CDN and QR codes.">
+  <meta name="twitter:image" content="images/logo.png">
+
+  <!-- JSON-LD Structured Data Schema for Search Engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "PixelVault Pro",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "description": "High-speed cloud image hosting, optimization, AI filters, and live QR code sharing studio.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
   
   <!-- Favicon Icon -->
   <link rel="icon" type="image/png" href="favicon.png">
   
-  <!-- Google Fonts: Outfit & Inter -->
+  <!-- Resource Hints & Preconnects for Ultra-Fast Loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="dns-prefetch" href="https://res.cloudinary.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <!-- Google Fonts: Outfit & Inter with font-display: swap -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons CDN -->
@@ -23,6 +70,9 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+  <!-- Accessible Skip To Main Content Link -->
+  <a href="#mainContent" class="skip-link">Skip to main content</a>
 
   <!-- Background Animated Radial Glow Lights -->
   <div class="ambient-light light-1"></div>
@@ -51,7 +101,7 @@
         <span class="mode-label"><i class="fa-solid fa-database"></i> Storage Target:</span>
         <div class="toggle-pill-group">
           <button type="button" class="toggle-btn active" id="btnModeCloud" data-mode="cloud">
-            <i class="fa-solid fa-globe"></i> 🌐 Free Cloud (ImgBB)
+            <i class="fa-solid fa-cloud"></i> ☁️ Cloud (Cloudinary)
           </button>
           <button type="button" class="toggle-btn" id="btnModeLocal" data-mode="local">
             <i class="fa-solid fa-laptop"></i> 💻 Local Disk
@@ -77,20 +127,20 @@
     <!-- ========================================== -->
     <!-- 2. MAIN WORKSPACE (Upload & Editor Section) -->
     <!-- ========================================== -->
-    <main class="workspace-grid">
+    <main class="workspace-grid" id="mainContent">
 
       <!-- LEFT COLUMN: Drag & Drop Zone -->
-      <section class="card glass-panel dropzone-card">
+      <section class="card glass-panel dropzone-card" aria-labelledby="headingUploadZone">
         <div class="card-header">
-          <h2><i class="fa-solid fa-file-arrow-up icon-neon"></i> Image Upload Zone</h2>
+          <h2 id="headingUploadZone"><i class="fa-solid fa-file-arrow-up icon-neon" aria-hidden="true"></i> Image Upload Zone</h2>
           <span class="badge-subtle" id="badgeCurrentMode">🌐 Public Cloud Link Mode</span>
         </div>
 
-        <div class="dropzone" id="dropzoneArea">
-          <input type="file" id="fileInput" accept="image/*" class="file-input-hidden" multiple>
+        <div class="dropzone" id="dropzoneArea" role="button" tabindex="0" aria-label="Upload image drop zone. Click or press Enter to browse files, or drag and drop images here.">
+          <input type="file" id="fileInput" accept="image/*" class="file-input-hidden" multiple aria-label="Select image files">
           
           <div class="dropzone-content">
-            <div class="upload-pulse-icon">
+            <div class="upload-pulse-icon" aria-hidden="true">
               <i class="fa-solid fa-cloud-bolt"></i>
             </div>
             <h3>Drag & Drop Images Here</h3>
@@ -98,8 +148,8 @@
             
             <div class="dropzone-divider"><span>OR</span></div>
             
-            <button class="btn btn-primary btn-glow" id="btnBrowseFiles">
-              <i class="fa-solid fa-folder-open"></i> Browse Files
+            <button class="btn btn-primary btn-glow" id="btnBrowseFiles" aria-label="Browse image files from your computer">
+              <i class="fa-solid fa-folder-open" aria-hidden="true"></i> Browse Files
             </button>
           </div>
         </div>
@@ -169,11 +219,11 @@
 
             <!-- Rotation & Transformations -->
             <div class="control-group">
-              <label><i class="fa-solid fa-rotate"></i> Rotate & Flip:</label>
+              <label><i class="fa-solid fa-rotate" aria-hidden="true"></i> Rotate & Flip:</label>
               <div class="btn-group-row">
-                <button type="button" class="btn-sm btn-icon" id="btnRotateLeft" title="Rotate Left 90°"><i class="fa-solid fa-rotate-left"></i> -90°</button>
-                <button type="button" class="btn-sm btn-icon" id="btnRotateRight" title="Rotate Right 90°"><i class="fa-solid fa-rotate-right"></i> +90°</button>
-                <button type="button" class="btn-sm btn-icon" id="btnFlipH" title="Flip Horizontal"><i class="fa-solid fa-arrows-left-right"></i> Flip H</button>
+                <button type="button" class="btn-sm btn-icon" id="btnRotateLeft" title="Rotate Left 90°" aria-label="Rotate Left 90 degrees"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> -90°</button>
+                <button type="button" class="btn-sm btn-icon" id="btnRotateRight" title="Rotate Right 90°" aria-label="Rotate Right 90 degrees"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> +90°</button>
+                <button type="button" class="btn-sm btn-icon" id="btnFlipH" title="Flip Horizontal" aria-label="Flip image horizontally"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Flip H</button>
               </div>
             </div>
 
@@ -265,16 +315,6 @@
         <div class="toolbar-left">
           <h2><i class="fa-solid fa-photo-film icon-neon"></i> Image Store Gallery</h2>
           <span class="badge-count" id="textImageCount">0 Items</span>
-          
-          <!-- Bulk ZIP Actions -->
-          <div class="bulk-actions-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="checkSelectAll"> Select All
-            </label>
-            <button class="btn btn-sm btn-primary hidden" id="btnDownloadZipSelected">
-              <i class="fa-solid fa-file-zipper"></i> Download Selected (.ZIP)
-            </button>
-          </div>
         </div>
 
         <!-- Toolbar Right Filters & Search -->
@@ -285,21 +325,21 @@
             <input type="text" id="inputSearch" placeholder="Search images by name...">
           </div>
 
-          <!-- Album Filter Pills -->
-          <div class="filter-pills" id="albumFilterPills">
-            <button class="filter-pill active" data-filter="all">All</button>
-            <button class="filter-pill" data-filter="General">📁 General</button>
-            <button class="filter-pill" data-filter="Personal">🔒 Personal</button>
-            <button class="filter-pill" data-filter="Work">💼 Work</button>
-            <button class="filter-pill" data-filter="Social Media">📲 Social</button>
-          </div>
+          <!-- Album Filter Dropdown -->
+          <select id="selectAlbumFilter" class="custom-select select-sm">
+            <option value="all">📁 All Albums</option>
+            <option value="General">📁 General</option>
+            <option value="Personal">🔒 Personal Vault</option>
+            <option value="Work">💼 Work Projects</option>
+            <option value="Social Media">📲 Social Media</option>
+          </select>
 
           <!-- Sort Dropdown -->
           <select id="selectSort" class="custom-select select-sm">
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-            <option value="views-desc">Most Viewed</option>
             <option value="size-desc">Largest Size</option>
+            <option value="size-asc">Smallest Size</option>
           </select>
         </div>
       </div>
@@ -319,24 +359,24 @@
   <!-- ========================================== -->
   <!-- 4. EMBED CODE & QR CODE MODAL -->
   <!-- ========================================== -->
-  <div class="modal-backdrop hidden" id="embedModal">
+  <div class="modal-backdrop hidden" id="embedModal" role="dialog" aria-modal="true" aria-labelledby="embedModalTitle">
     <div class="modal-content glass-panel">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-code icon-neon"></i> Shareable Link, Embed & QR Code</h3>
-        <button class="btn-close" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
+        <h3 id="embedModalTitle"><i class="fa-solid fa-code icon-neon" aria-hidden="true"></i> Shareable Link, Embed & QR Code</h3>
+        <button class="btn-close" id="btnCloseModal" aria-label="Close embed modal"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
 
       <div class="modal-body">
         <div class="modal-preview-grid">
           <div class="modal-preview-box">
-            <img id="modalPreviewImg" src="" alt="Preview">
+            <img id="modalPreviewImg" src="" alt="Preview of uploaded image">
           </div>
           <!-- Live QR Code Canvas Box -->
           <div class="qr-code-box">
-            <canvas id="qrCodeCanvas"></canvas>
-            <p><i class="fa-solid fa-qrcode"></i> Scan on Mobile Camera</p>
-            <button class="btn btn-sm btn-primary" id="btnDownloadQr">
-              <i class="fa-solid fa-download"></i> Save QR
+            <canvas id="qrCodeCanvas" aria-label="Generated QR code"></canvas>
+            <p><i class="fa-solid fa-qrcode" aria-hidden="true"></i> Scan on Mobile Camera</p>
+            <button class="btn btn-sm btn-primary" id="btnDownloadQr" aria-label="Save QR code image">
+              <i class="fa-solid fa-download" aria-hidden="true"></i> Save QR
             </button>
           </div>
         </div>
@@ -344,33 +384,33 @@
         <div class="embed-fields">
           <!-- 1. Direct Shareable Link -->
           <div class="embed-group">
-            <label><i class="fa-solid fa-link"></i> Direct Shareable URL (Worldwide):</label>
+            <label for="inputDirectUrl"><i class="fa-solid fa-link" aria-hidden="true"></i> Direct Shareable URL (Worldwide):</label>
             <div class="input-copy-row">
               <input type="text" id="inputDirectUrl" readonly class="input-readonly">
-              <button class="btn btn-primary btn-copy" data-target="inputDirectUrl">
-                <i class="fa-solid fa-copy"></i> Copy Link
+              <button class="btn btn-primary btn-copy" data-target="inputDirectUrl" aria-label="Copy direct shareable URL">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Link
               </button>
             </div>
           </div>
 
           <!-- 2. HTML Embed Code -->
           <div class="embed-group">
-            <label><i class="fa-solid fa-code"></i> HTML Embed Tag (&lt;img&gt;):</label>
+            <label for="inputHtmlEmbed"><i class="fa-solid fa-code" aria-hidden="true"></i> HTML Embed Tag (&lt;img&gt;):</label>
             <div class="input-copy-row">
               <input type="text" id="inputHtmlEmbed" readonly class="input-readonly">
-              <button class="btn btn-primary btn-copy" data-target="inputHtmlEmbed">
-                <i class="fa-solid fa-copy"></i> Copy HTML
+              <button class="btn btn-primary btn-copy" data-target="inputHtmlEmbed" aria-label="Copy HTML image tag">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy HTML
               </button>
             </div>
           </div>
 
           <!-- 3. Markdown Embed Code -->
           <div class="embed-group">
-            <label><i class="fa-brands fa-markdown"></i> Markdown Code (![alt](url)):</label>
+            <label for="inputMarkdownEmbed"><i class="fa-brands fa-markdown" aria-hidden="true"></i> Markdown Code (![alt](url)):</label>
             <div class="input-copy-row">
               <input type="text" id="inputMarkdownEmbed" readonly class="input-readonly">
-              <button class="btn btn-primary btn-copy" data-target="inputMarkdownEmbed">
-                <i class="fa-solid fa-copy"></i> Copy Markdown
+              <button class="btn btn-primary btn-copy" data-target="inputMarkdownEmbed" aria-label="Copy markdown image tag">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Markdown
               </button>
             </div>
           </div>
@@ -382,18 +422,18 @@
   <!-- ========================================== -->
   <!-- 5. FULL SIZE LIGHTBOX VIEW MODAL -->
   <!-- ========================================== -->
-  <div class="modal-backdrop hidden" id="lightboxModal">
+  <div class="modal-backdrop hidden" id="lightboxModal" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
     <div class="lightbox-content glass-panel">
       <div class="lightbox-header">
         <div class="lightbox-title-info">
-          <h3 id="lightboxTitle"><i class="fa-regular fa-image icon-neon"></i> Full View</h3>
+          <h3 id="lightboxTitle"><i class="fa-regular fa-image icon-neon" aria-hidden="true"></i> Full View</h3>
           <span class="badge-subtle" id="lightboxMetaInfo">1920x1080px | 1.2 MB</span>
         </div>
         <div class="lightbox-actions">
-          <button type="button" id="btnLightboxDownload" class="btn btn-sm btn-primary">
-            <i class="fa-solid fa-download"></i> Download Full Resolution
+          <button type="button" id="btnLightboxDownload" class="btn btn-sm btn-primary" aria-label="Download full resolution image">
+            <i class="fa-solid fa-download" aria-hidden="true"></i> Download Full Resolution
           </button>
-          <button class="btn-close" id="btnCloseLightbox"><i class="fa-solid fa-xmark"></i></button>
+          <button class="btn-close" id="btnCloseLightbox" aria-label="Close full size view"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
       </div>
       <div class="lightbox-image-container">
@@ -405,32 +445,32 @@
   <!-- ========================================== -->
   <!-- 6. PASSWORD PROTECTION VERIFICATION MODAL -->
   <!-- ========================================== -->
-  <div class="modal-backdrop hidden" id="passwordModal">
+  <div class="modal-backdrop hidden" id="passwordModal" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle">
     <div class="modal-content glass-panel modal-sm">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-lock icon-neon"></i> Protected Image</h3>
-        <button class="btn-close" id="btnClosePasswordModal"><i class="fa-solid fa-xmark"></i></button>
+        <h3 id="passwordModalTitle"><i class="fa-solid fa-lock icon-neon" aria-hidden="true"></i> Protected Image</h3>
+        <button class="btn-close" id="btnClosePasswordModal" aria-label="Close password dialog"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="modal-body">
         <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Is photo ko access karne ke liye password enter karein:</p>
-        <input type="password" id="inputVerifyPassword" class="custom-input" placeholder="Enter password...">
-        <button class="btn btn-primary btn-full" id="btnVerifySubmitPassword" style="margin-top: 14px;">
-          <i class="fa-solid fa-key"></i> Unlock Image
+        <input type="password" id="inputVerifyPassword" class="custom-input" placeholder="Enter password..." aria-label="Enter password to unlock image">
+        <button class="btn btn-primary btn-full" id="btnVerifySubmitPassword" style="margin-top: 14px;" aria-label="Submit password and unlock image">
+          <i class="fa-solid fa-key" aria-hidden="true"></i> Unlock Image
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <!-- Toast Notification Container (Live Accessible Region) -->
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- CDNs for Cropper.js, QRious (QR Generator), JSZip (ZIP Archiver) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
 
   <!-- Custom JavaScript Files -->
-  <script src="js/editor.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/editor.js" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>

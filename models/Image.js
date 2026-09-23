@@ -25,6 +25,9 @@ const imageSchema = new mongoose.Schema({
   // Agar Online Free Cloud upload hua hai toh direct URL
   cloudUrl: { type: String, default: null },
 
+  // Cloudinary public_id (for permanent cloud deletion)
+  cloudinaryPublicId: { type: String, default: null },
+
   // Agar Local Computer Storage upload hua hai toh relative server URL
   localPath: { type: String, default: null },
 

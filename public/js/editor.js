@@ -84,15 +84,31 @@ document.getElementById('btnFlipH').addEventListener('click', () => {
   }
 });
 
-// ------------------------------------------
-// EVENT LISTENER: QUALITY SLIDER TEXT UPDATE
-// ------------------------------------------
-const rangeQuality = document.getElementById('rangeQuality');
-const valQualityText = document.getElementById('valQualityText');
-
 rangeQuality.addEventListener('input', function () {
   valQualityText.textContent = `${this.value}%`;
 });
+
+// ------------------------------------------
+// EVENT LISTENER: LIVE AI FILTER PREVIEW
+// ------------------------------------------
+const selectFilterPreset = document.getElementById('selectFilterPreset');
+if (selectFilterPreset) {
+  selectFilterPreset.addEventListener('change', function () {
+    const val = this.value;
+    let filterString = 'none';
+    if (val === 'cinematic') filterString = 'contrast(1.25) saturate(1.35) hue-rotate(-10deg)';
+    if (val === 'vintage') filterString = 'sepia(0.45) contrast(1.15) brightness(0.92)';
+    if (val === 'cyberpunk') filterString = 'contrast(1.4) saturate(1.8) hue-rotate(180deg)';
+    if (val === 'grayscale') filterString = 'grayscale(100%)';
+    if (val === 'sepia') filterString = 'sepia(100%)';
+    if (val === 'hdr') filterString = 'saturate(1.65) contrast(1.35)';
+
+    const cropBoxImgs = document.querySelectorAll('.cropper-container img, #imageToCrop');
+    cropBoxImgs.forEach(img => {
+      img.style.filter = filterString;
+    });
+  });
+}
 
 // ------------------------------------------
 // HELPER: Cropped Image Canvas to Blob Converter

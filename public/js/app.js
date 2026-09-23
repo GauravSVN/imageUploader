@@ -73,11 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ==========================================
-  // 2. DRAG & DROP FILE SELECTION HANDLERS
-  // ==========================================
-  btnBrowseFiles.addEventListener('click', () => fileInput.click());
-
   let selectedBatchFilesQueue = []; // Multiple files batch list
 
   // Batch Queue UI Elements
@@ -94,6 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', (e) => {
     if (e.target.files && e.target.files.length > 0) {
       handleFilesSelected(Array.from(e.target.files));
+    }
+  });
+
+  // Accessible Keyboard Activation for Dropzone (Enter & Space)
+  dropzoneArea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
     }
   });
 
@@ -305,6 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Embed Modal Auto-Open Karo
         openEmbedModal(result.image);
+
+        // Reset fields for next upload
+        if (inputCustomFileName) inputCustomFileName.value = '';
+        if (inputLinkPassword) inputLinkPassword.value = '';
+        if (inputWatermarkText) inputWatermarkText.value = '';
       } else {
         throw new Error(result.message || 'Upload process fail ho gaya.');
       }
@@ -350,13 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
       list = list.filter(img => img.originalName.toLowerCase().includes(query) || img.fileName.toLowerCase().includes(query));
     }
 
-    // 2. Storage & Format Pill Filter Apply Karo
-    if (currentFilter === 'cloud') {
-      list = list.filter(img => img.storageType === 'cloud');
-    } else if (currentFilter === 'local') {
-      list = list.filter(img => img.storageType === 'local');
-    } else if (currentFilter === 'webp') {
-      list = list.filter(img => img.mimeType.includes('webp'));
+    // 2. Album Filter Apply Karo
+    const selectAlbumFilter = document.getElementById('selectAlbumFilter');
+    const selectedAlbum = selectAlbumFilter ? selectAlbumFilter.value : 'all';
+    if (selectedAlbum !== 'all') {
+      list = list.filter(img => (img.album || 'General') === selectedAlbum);
     }
 
     // 3. Sorting Apply Karo
@@ -383,41 +389,42 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Glass Cards HTML Generation
+    // Glass Cards HTML Generation (Clean & Compact with Lock indicator)
     galleryContainer.innerHTML = list.map(img => {
       const publicUrl = img.cloudUrl || img.localPath || `/uploads/${img.fileName}`;
-      const isCloud = img.storageType === 'cloud';
+      const fullUrl = publicUrl.startsWith('http') ? publicUrl : `${window.location.origin}${publicUrl}`;
       const formattedSize = formatBytes(img.fileSize);
       const dimensions = (img.dimensions && img.dimensions.width) 
-        ? `${img.dimensions.width}x${img.dimensions.height}px` 
+        ? `${img.dimensions.width}×${img.dimensions.height}` 
         : 'Auto';
+      const isProtected = Boolean(img.password);
+      const lockOverlay = isProtected ? `<div class="card-lock-badge"><i class="fa-solid fa-lock"></i> Protected</div>` : '';
+      const imgStyle = isProtected ? 'filter: blur(10px); transition: filter 0.3s ease;' : '';
 
       return `
         <div class="image-card" data-id="${img.id}">
-          <div class="card-img-wrapper">
-            <img src="${publicUrl}" alt="${img.originalName}" loading="lazy">
-            <span class="badge-storage-tag ${isCloud ? 'cloud' : 'local'}">
-              ${isCloud ? '🌐 Cloud' : '💻 Local'}
-            </span>
+          <div class="card-img-wrapper" role="button" tabindex="0" title="${isProtected ? 'Click to enter password and view' : 'Click to view full resolution'}" aria-label="View full resolution image for ${img.originalName}">
+            ${lockOverlay}
+            <img src="${publicUrl}" alt="${img.originalName}" loading="lazy" decoding="async" style="${imgStyle}">
           </div>
 
           <div class="card-body">
             <div class="card-title" title="${img.originalName}">${img.originalName}</div>
             
             <div class="card-meta-row">
-              <span><i class="fa-solid fa-hard-drive"></i> ${formattedSize}</span>
-              <span><i class="fa-solid fa-expand"></i> ${dimensions}</span>
+              <span><i class="fa-solid fa-hard-drive" aria-hidden="true"></i> ${formattedSize}</span>
+              <span><i class="fa-solid fa-folder" aria-hidden="true"></i> ${img.album || 'General'}</span>
             </div>
 
             <div class="card-actions">
-              <button class="btn-card-action btn-copy-url" data-url="${publicUrl}">
-                <i class="fa-solid fa-link"></i> Link
+              <button class="btn-card-action btn-copy-url" data-url="${fullUrl}" title="Copy full shareable link" aria-label="Copy direct shareable link for ${img.originalName}">
+                <i class="fa-solid fa-link" aria-hidden="true"></i> <span>Link</span>
               </button>
-              <button class="btn-card-action btn-open-embed" data-id="${img.id}">
-                <i class="fa-solid fa-code"></i> Embed
+              <button class="btn-card-action btn-open-embed" data-id="${img.id}" title="View share codes, download & QR" aria-label="View embed codes and QR code for ${img.originalName}">
+                <i class="fa-solid fa-code" aria-hidden="true"></i> <span>Embed</span>
               </button>
-              <button class="btn-card-action danger btn-delete-img" data-id="${img.id}">
-                <i class="fa-solid fa-trash"></i>
+              <button class="btn-card-action danger btn-delete-img" data-id="${img.id}" title="Delete photo" aria-label="Delete image ${img.originalName}">
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
               </button>
             </div>
           </div>
@@ -430,24 +437,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function attachCardEvents() {
-    // 0. Image Thumbnail Click -> Full Size Lightbox View
+    // 0. Image Thumbnail Click & Keyboard Enter -> Full Size Lightbox View
     document.querySelectorAll('.card-img-wrapper').forEach(wrapper => {
-      wrapper.addEventListener('click', function () {
-        const parentCard = this.closest('.image-card');
+      const openAction = () => {
+        const parentCard = wrapper.closest('.image-card');
         const id = parentCard ? parentCard.getAttribute('data-id') : null;
         const targetImg = allImagesList.find(img => img.id === id);
         if (targetImg) {
           openLightboxModal(targetImg);
         }
+      };
+      wrapper.addEventListener('click', openAction);
+      wrapper.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openAction();
+        }
       });
     });
 
-    // 1. Copy Link Event
+    // 1. Copy Link Event (With fail-proof copy & visual feedback)
     document.querySelectorAll('.btn-copy-url').forEach(btn => {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
         const url = this.getAttribute('data-url');
-        copyToClipboard(url, 'Direct Image Shareable Link copied!');
+        copyToClipboard(url, '✓ Link successfully copied!');
+
+        // Visual feedback right on button
+        const span = this.querySelector('span');
+        const icon = this.querySelector('i');
+        const origText = span ? span.textContent : 'Link';
+        if (span) span.textContent = 'Copied!';
+        if (icon) icon.className = 'fa-solid fa-check';
+        this.classList.add('copied');
+
+        setTimeout(() => {
+          if (span) span.textContent = origText;
+          if (icon) icon.className = 'fa-solid fa-link';
+          this.classList.remove('copied');
+        }, 1800);
       });
     });
 
@@ -456,20 +484,40 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
         const id = this.getAttribute('data-id');
-        const targetImg = allImagesList.find(img => img.id === id);
+        let targetImg = allImagesList.find(img => img.id === id);
+        if (!targetImg) {
+          const card = this.closest('.image-card');
+          const imgElem = card ? card.querySelector('.card-img-wrapper img') : null;
+          const titleElem = card ? card.querySelector('.card-title') : null;
+          if (imgElem) {
+            targetImg = {
+              id: id,
+              originalName: titleElem ? titleElem.textContent : 'Image',
+              fileName: imgElem.src.split('/').pop(),
+              localPath: imgElem.src
+            };
+          }
+        }
         if (targetImg) {
           openEmbedModal(targetImg);
         }
       });
     });
 
-    // 3. Delete Image Event
+    // 3. Delete Image Event (Immediate UI removal & server delete)
     document.querySelectorAll('.btn-delete-img').forEach(btn => {
       btn.addEventListener('click', async function (e) {
         e.stopPropagation();
         const id = this.getAttribute('data-id');
-        if (confirm('Kya aap sach mein is image ko permanent delete karna chahte hain?')) {
-          await deleteImage(id);
+        const card = this.closest('.image-card');
+        
+        if (confirm('Kya aap is image ko permanently delete karna chahte hain?')) {
+          if (card) {
+            card.style.opacity = '0.3';
+            card.style.transform = 'scale(0.92)';
+            card.style.transition = 'all 0.25s ease';
+          }
+          await deleteImage(id, card);
         }
       });
     });
@@ -544,19 +592,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // 5. DELETE & STATS API HANDLERS
   // ==========================================
-  async function deleteImage(id) {
+  async function deleteImage(id, card) {
     try {
       const res = await fetch(`/api/images/${id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (data.success) {
-        showToast('Image successfully delete kar di gayi!', 'info');
-        fetchImagesList();
-        fetchStorageStats();
-      } else {
-        showToast(`Delete failed: ${data.message}`, 'error');
+      
+      // Even if already deleted on server, clean from UI
+      if (card) {
+        card.remove();
       }
+      allImagesList = allImagesList.filter(img => img.id !== id);
+      const countElem = document.getElementById('textImageCount');
+      if (countElem) countElem.textContent = `${allImagesList.length} Items`;
+
+      if (data.success) {
+        showToast('Image successfully delete kar di gayi!', 'success');
+      } else {
+        showToast(data.message || 'Image removed', 'info');
+      }
+      fetchStorageStats();
     } catch (err) {
-      showToast('Delete karne mein issue aaya.', 'error');
+      if (card) {
+        card.remove();
+      }
+      allImagesList = allImagesList.filter(img => img.id !== id);
+      showToast('Image remove kar di gayi!', 'info');
+      fetchStorageStats();
     }
   }
 
@@ -653,13 +714,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     btnLightboxDownload.onclick = async () => {
       fetch(`/api/images/${img.id}/download`, { method: 'POST' }).catch(() => {});
-      const response = await fetch(fullUrl);
-      const blob = await response.blob();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = img.originalName;
-      a.click();
-      showToast('Download started!', 'success');
+      try {
+        const response = await fetch(fullUrl);
+        if (!response.ok) throw new Error('Fetch status error');
+        const blob = await response.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = img.originalName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Download started!', 'success');
+      } catch (err) {
+        // Resilient Fallback for Cross-Origin / CDN downloads
+        const a = document.createElement('a');
+        a.href = fullUrl;
+        a.target = '_blank';
+        a.download = img.originalName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Downloading image in new tab...', 'info');
+      }
     };
 
     // Increment View Counter API
@@ -745,11 +821,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function copyToClipboard(text, message) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast(message, 'success');
-    }).catch(() => {
-      showToast('Clipboard access denied.', 'error');
-    });
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(message, 'success');
+      }).catch(() => {
+        fallbackCopyTextToClipboard(text, message);
+      });
+    } else {
+      fallbackCopyTextToClipboard(text, message);
+    }
+  }
+
+  function fallbackCopyTextToClipboard(text, message) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showToast(message, 'success');
+      } else {
+        showToast('Clipboard copy failed.', 'error');
+      }
+    } catch (err) {
+      showToast('Clipboard access error.', 'error');
+    }
+    document.body.removeChild(textArea);
   }
 
   // Toast Notification System
@@ -772,20 +875,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3500);
   }
 
+  // Debounce Helper for High-Performance Search
+  function debounce(fn, delay = 180) {
+    let timer = null;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
   // Search & Filter Listeners
-  inputSearch.addEventListener('input', renderGallery);
+  inputSearch.addEventListener('input', debounce(renderGallery, 180));
   selectSort.addEventListener('change', (e) => {
     currentSort = e.target.value;
     renderGallery();
   });
 
-  document.querySelectorAll('.filter-pill').forEach(pill => {
-    pill.addEventListener('click', function () {
-      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-      this.classList.add('active');
-      currentFilter = this.getAttribute('data-filter');
-      renderGallery();
-    });
+  const selectAlbumFilter = document.getElementById('selectAlbumFilter');
+  if (selectAlbumFilter) {
+    selectAlbumFilter.addEventListener('change', renderGallery);
+  }
+
+  // Keyboard Escape Key Closes Any Active Modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (embedModal && !embedModal.classList.contains('hidden')) {
+        embedModal.classList.add('hidden');
+      }
+      if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+        lightboxModal.classList.add('hidden');
+      }
+      if (passwordModal && !passwordModal.classList.contains('hidden')) {
+        passwordModal.classList.add('hidden');
+      }
+    }
   });
 
   // Helper function to format Bytes to KB / MB

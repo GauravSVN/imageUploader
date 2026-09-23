@@ -1,35 +1,5 @@
 [
   {
-    "id": "c3019098-2fb7-439e-93ad-2dfc480f4185",
-    "originalName": "ChatGPT Image Aug 12, 2026, 10_35_16 PM.png",
-    "fileName": "img-1790059289528-c30190.png",
-    "storageType": "local",
-    "cloudUrl": null,
-    "localPath": "/uploads/img-1790059289528-c30190.png",
-    "fileSize": 5383689,
-    "mimeType": "image/png",
-    "dimensions": {
-      "width": 1128,
-      "height": 1191
-    },
-    "createdAt": "2026-09-22T06:41:35.285Z"
-  },
-  {
-    "id": "d394898d-786d-47d1-aeb3-2810a29cdf09",
-    "originalName": "ChatGPT Image Aug 21, 2026, 11_58_00 AM.png",
-    "fileName": "img-1790066332045-d39489.webp",
-    "storageType": "local",
-    "cloudUrl": null,
-    "localPath": "/uploads/img-1790066332045-d39489.webp",
-    "fileSize": 312938,
-    "mimeType": "image/webp",
-    "dimensions": {
-      "width": 1224,
-      "height": 1241
-    },
-    "createdAt": "2026-09-22T08:38:54.763Z"
-  },
-  {
     "id": "6f8df2f4-85f6-4dab-b1c3-6b3097d6ea27",
     "originalName": "ChatGPT Image Aug 21, 2026, 11_58_00 AM.png",
     "fileName": "img-1790066528753-6f8df2.webp",
@@ -57,22 +27,8 @@
       "width": 2000,
       "height": 1958
     },
-    "createdAt": "2026-09-22T08:42:49.043Z"
-  },
-  {
-    "id": "49128b62-ba72-4677-9b8b-3b15bd352c56",
-    "originalName": "ChatGPT Image Aug 3, 2026, 10_37_19 PM.png",
-    "fileName": "img-1790067214471-49128b.webp",
-    "storageType": "local",
-    "cloudUrl": null,
-    "localPath": "/uploads/img-1790067214471-49128b.webp",
-    "fileSize": 217450,
-    "mimeType": "image/webp",
-    "dimensions": {
-      "width": 1024,
-      "height": 1536
-    },
-    "createdAt": "2026-09-22T08:53:37.325Z"
+    "createdAt": "2026-09-22T08:42:49.043Z",
+    "viewsCount": 2
   },
   {
     "id": "b58a58cd-78cb-45ad-aeb2-3a3fcfdbcb9b",
@@ -102,22 +58,9 @@
       "width": 1254,
       "height": 1254
     },
-    "createdAt": "2026-09-22T08:54:02.896Z"
-  },
-  {
-    "id": "00f32058-ed02-4d6f-839e-d0a038d9ac32",
-    "originalName": "ChatGPT Image Aug 21, 2026, 11_58_00 AM.png",
-    "fileName": "img-1790067242934-00f320.webp",
-    "storageType": "local",
-    "cloudUrl": null,
-    "localPath": "/uploads/img-1790067242934-00f320.webp",
-    "fileSize": 118602,
-    "mimeType": "image/webp",
-    "dimensions": {
-      "width": 1254,
-      "height": 1254
-    },
-    "createdAt": "2026-09-22T08:54:03.514Z"
+    "createdAt": "2026-09-22T08:54:02.896Z",
+    "viewsCount": 1,
+    "downloadsCount": 1
   },
   {
     "id": "b9fb3491-553c-41c0-ac86-9f20976ab245",
@@ -133,5 +76,74 @@
       "height": 1024
     },
     "createdAt": "2026-09-22T08:54:04.080Z"
+  },
+  {
+    "id": "830096af-9d61-4a1b-98cf-d258ff059639",
+    "originalName": "annu pho.jpeg",
+    "fileName": "img-1790144988304-830096.png",
+    "storageType": "local",
+    "cloudUrl": null,
+    "localPath": "/uploads/img-1790144988304-830096.png",
+    "fileSize": 2551817,
+    "mimeType": "image/png",
+    "dimensions": {
+      "width": 709,
+      "height": 898
+    },
+    "password": null,
+    "expiresAt": "2026-09-24T06:29:48.282Z",
+    "isPrivate": false,
+    "album": "Social Media",
+    "filterPreset": "none",
+    "watermarkText": null,
+    "viewsCount": 2,
+    "downloadsCount": 1,
+    "createdAt": "2026-09-23T06:29:52.081Z"
+  },
+  {
+    "id": "d2111a6f-ad80-481c-8bc3-236c5c6db045",
+    "originalName": "images.jpg",
+    "fileName": "img-1790147402580-d2111a.png",
+    "storageType": "local",
+    "cloudUrl": null,
+    "localPath": "/uploads/img-1790147402580-d2111a.png",
+    "fileSize": 409337,
+    "mimeType": "image/png",
+    "dimensions": {
+      "width": 447,
+      "height": 447
+    },
+    "password": "teacheteacher@test.comr@tepassword123st.com",
+    "expiresAt": null,
+    "isPrivate": false,
+    "album": "General",
+    "filterPreset": "none",
+    "watermarkText": "passwordteacherteacher@test.com",
+    "viewsCount": 0,
+    "downloadsCount": 0,
+    "createdAt": "2026-09-23T07:10:04.540Z"
+  },
+  {
+    "id": "cef63328-d8c3-4712-90ed-fd22d1ec1984",
+    "originalName": "LiveCloudinaryTest",
+    "fileName": "img-1790148373011-cef633.webp",
+    "storageType": "cloud",
+    "cloudUrl": "https://res.cloudinary.com/pxetnuhv/image/upload/v1790148374/pixelvault/img-1790148373011-cef633.webp",
+    "localPath": null,
+    "fileSize": 36036,
+    "mimeType": "image/webp",
+    "dimensions": {
+      "width": 1024,
+      "height": 1024
+    },
+    "password": null,
+    "expiresAt": null,
+    "isPrivate": false,
+    "album": "General",
+    "filterPreset": "none",
+    "watermarkText": null,
+    "viewsCount": 0,
+    "downloadsCount": 0,
+    "createdAt": "2026-09-23T07:26:14.682Z"
   }
 ]

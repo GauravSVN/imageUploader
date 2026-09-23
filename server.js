@@ -5,6 +5,7 @@
 // Iss mein Express REST APIs, File Upload, ImgBB Cloud API, Password Protection,
 // Expiring Links, View Counters, Albums, aur Hindi Comments hain.
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -13,6 +14,7 @@ const multer = require('multer');
 const axios = require('axios');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
+const cloudinary = require('cloudinary').v2;
 
 // MongoDB Database Config aur Model import kar rahe hain
 const { connectDB, getIsConnected } = require('./config/db.js');
@@ -22,7 +24,50 @@ const ImageModel = require('./models/Image.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ImgBB Free Online Cloud API Key
+// Cloudinary Configuration Setup
+const isCloudinaryReady = Boolean(
+  process.env.CLOUDINARY_URL || 
+  (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
+);
+
+if (isCloudinaryReady) {
+  if (process.env.CLOUDINARY_URL) {
+    cloudinary.config({
+      cloudinary_url: process.env.CLOUDINARY_URL.trim(),
+      secure: true
+    });
+  } else {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME.trim(),
+      api_key: process.env.CLOUDINARY_API_KEY.trim(),
+      api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
+      secure: true
+    });
+  }
+  console.log('☁️ [Cloudinary Configured]: Connected with Cloud Name ->', cloudinary.config().cloud_name || 'Active');
+} else {
+  console.log('☁️ [Cloudinary Status]: Credentials missing in .env (Local storage & ImgBB fallback ready)');
+}
+
+// Cloudinary Buffer Upload Stream Helper Function
+function uploadBufferToCloudinary(buffer, filename) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'pixelvault',
+        public_id: path.parse(filename).name,
+        resource_type: 'image'
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
+// ImgBB Free Online Cloud API Key (Secondary fallback)
 const IMGBB_API_KEY = process.env.IMGBB_API_KEY || '6d00053631585af138c3726579dace98';
 
 // ==========================================
@@ -45,14 +90,26 @@ if (!fs.existsSync(jsonDbPath)) {
 }
 
 // ==========================================
-// 2. MIDDLEWARE SETUP
+// 2. MIDDLEWARE SETUP (Performance Compression & Caching)
 // ==========================================
+const compression = require('compression');
+app.use(compression()); // Gzip & Brotli HTTP payload compression
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-app.use('/uploads', express.static(uploadsDir));
-app.use(express.static(path.join(__dirname, 'public')));
+// High-Performance Static Caching (7 days for uploads, 1 day for public assets)
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    } else if (filePath.match(/\.(css|js|png|jpg|jpeg|webp|ico|svg|woff2)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+    }
+  }
+}));
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -165,34 +222,54 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
     const processedFileSize = processedBuffer.length;
     let cloudUrl = null;
+    let cloudinaryPublicId = null;
     let localPath = null;
     let finalMimeType = `image/${targetFormat === 'jpg' ? 'jpeg' : targetFormat}`;
 
     let actualStorageType = storageTypePref;
 
-    // Storage Dispatcher
+    // Storage Dispatcher (Cloudinary -> ImgBB -> Local Disk)
     if (actualStorageType === 'cloud') {
-      console.log('🌐 [Cloud Uploading]: Sending image to ImgBB Free Cloud API...');
-      try {
-        const base64Image = processedBuffer.toString('base64');
-        const params = new URLSearchParams();
-        params.append('key', IMGBB_API_KEY);
-        params.append('image', base64Image);
-        params.append('name', finalFilename);
-
-        const cloudResponse = await axios.post('https://api.imgbb.com/1/upload', params, {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          timeout: 10000
-        });
-
-        if (cloudResponse.data && cloudResponse.data.data && cloudResponse.data.data.url) {
-          cloudUrl = cloudResponse.data.data.url;
-          console.log('✅ [Cloud Upload Success]: Public URL ->', cloudUrl);
-        } else {
-          throw new Error('Cloud API did not return valid URL');
+      // 1. Try Cloudinary if credentials are configured
+      if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+        console.log('☁️ [Cloudinary Uploading]: Uploading image to Cloudinary CDN...');
+        try {
+          const cldResult = await uploadBufferToCloudinary(processedBuffer, finalFilename);
+          if (cldResult && cldResult.secure_url) {
+            cloudUrl = cldResult.secure_url;
+            cloudinaryPublicId = cldResult.public_id;
+            console.log('✅ [Cloudinary Upload Success]: High-Speed CDN URL ->', cloudUrl);
+          }
+        } catch (cldErr) {
+          console.warn('⚠️ [Cloudinary Notice]: Cloudinary upload failed (', cldErr.message, '). Trying fallback...');
         }
-      } catch (cloudErr) {
-        console.warn('⚠️ [Cloud API Notice]: Cloud upload notice (', cloudErr.message, '). Auto-switching to Local Storage...');
+      }
+
+      // 2. Secondary Cloud Fallback: ImgBB
+      if (!cloudUrl && IMGBB_API_KEY) {
+        console.log('🌐 [ImgBB Uploading]: Sending image to ImgBB Free Cloud API...');
+        try {
+          const base64Image = processedBuffer.toString('base64');
+          const params = new URLSearchParams();
+          params.append('key', IMGBB_API_KEY);
+          params.append('image', base64Image);
+          params.append('name', finalFilename);
+
+          const cloudResponse = await axios.post('https://api.imgbb.com/1/upload', params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            timeout: 10000
+          });
+
+          if (cloudResponse.data && cloudResponse.data.data && cloudResponse.data.data.url) {
+            cloudUrl = cloudResponse.data.data.url;
+            console.log('✅ [ImgBB Upload Success]: Public URL ->', cloudUrl);
+          }
+        } catch (cloudErr) {
+          console.warn('⚠️ [Cloud API Notice]: Cloud upload notice (', cloudErr.message, '). Auto-switching to Local Storage...');
+        }
+      }
+
+      if (!cloudUrl) {
         actualStorageType = 'local';
       }
     }
@@ -212,6 +289,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
       fileName: finalFilename,
       storageType: actualStorageType,
       cloudUrl: cloudUrl,
+      cloudinaryPublicId: cloudinaryPublicId,
       localPath: localPath,
       fileSize: processedFileSize,
       mimeType: finalMimeType,
@@ -353,18 +431,38 @@ app.delete('/api/images/:id', async (req, res) => {
 
     const targetItem = deletedItem || itemInJson;
 
-    if (!targetItem) {
-      return res.status(404).json({ success: false, message: 'Image record nahi mila.' });
-    }
+    // 1. Agar image Cloudinary par thi, Cloudinary se permanently destroy karein
+    if (targetItem) {
+      const publicIdToDelete = targetItem.cloudinaryPublicId || 
+        (targetItem.fileName ? `pixelvault/${path.parse(targetItem.fileName).name}` : null);
 
-    if (targetItem.localPath) {
-      const localFilePath = path.join(__dirname, targetItem.localPath);
-      if (fs.existsSync(localFilePath)) {
-        fs.unlinkSync(localFilePath);
+      const isCloudinaryImage = Boolean(
+        publicIdToDelete && 
+        (targetItem.storageType === 'cloud' || (targetItem.cloudUrl && targetItem.cloudUrl.includes('cloudinary.com')))
+      );
+
+      if (isCloudinaryImage && isCloudinaryReady) {
+        try {
+          console.log(`🗑️ [Cloudinary Deleting]: Removing asset ${publicIdToDelete} from Cloudinary...`);
+          const destroyResult = await cloudinary.uploader.destroy(publicIdToDelete);
+          console.log(`✅ [Cloudinary Deleted]: Cloudinary response ->`, destroyResult);
+        } catch (cldDelErr) {
+          console.error('⚠️ [Cloudinary Delete Error]:', cldDelErr.message);
+        }
       }
     }
 
-    res.json({ success: true, message: 'Image delete kar di gayi hai!' });
+    // 2. Agar image local storage mein thi, disk se unlink karein
+    if (targetItem && targetItem.localPath) {
+      const fileNameOnly = path.basename(targetItem.localPath);
+      const localFilePath = path.join(uploadsDir, fileNameOnly);
+      if (fs.existsSync(localFilePath)) {
+        fs.unlinkSync(localFilePath);
+        console.log(`💻 [Local Deleted]: File unlinked ->`, localFilePath);
+      }
+    }
+
+    res.json({ success: true, message: 'Image successfully website aur Cloudinary se delete kar di gayi hai!' });
   } catch (error) {
     console.error('Delete API Error:', error.message);
     res.status(500).json({ success: false, message: 'Delete karne mein error aaya.' });
