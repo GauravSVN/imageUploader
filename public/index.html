@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixelVault Pro | Ultimate Glassmorphism Image Store & Dual Cloud Uploader</title>
+  
+  <!-- Favicon Icon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Cropper.js CSS CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+  <!-- Main Glassmorphism Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background Animated Radial Glow Lights -->
+  <div class="ambient-light light-1"></div>
+  <div class="ambient-light light-2"></div>
+  <div class="ambient-light light-3"></div>
+
+  <!-- App Wrapper Container -->
+  <div class="app-container">
+
+    <!-- ========================================== -->
+    <!-- 1. TOP HEADER NAVBAR -->
+    <!-- ========================================== -->
+    <header class="navbar glass-panel">
+      <div class="nav-brand">
+        <div class="brand-logo-wrapper">
+          <img src="images/logo.png" alt="PixelVault Pro Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text">
+          <h1>PixelVault <span class="badge-pro">PRO CLOUD</span></h1>
+          <p>Ultimate Glassmorphism Image Store</p>
+        </div>
+      </div>
+
+      <!-- Center: Storage Mode Selector Switch -->
+      <div class="storage-mode-selector">
+        <span class="mode-label"><i class="fa-solid fa-database"></i> Storage Target:</span>
+        <div class="toggle-pill-group">
+          <button type="button" class="toggle-btn active" id="btnModeCloud" data-mode="cloud">
+            <i class="fa-solid fa-globe"></i> 🌐 Free Cloud (ImgBB)
+          </button>
+          <button type="button" class="toggle-btn" id="btnModeLocal" data-mode="local">
+            <i class="fa-solid fa-laptop"></i> 💻 Local Disk
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Storage Usage Meter & Status -->
+      <div class="nav-stats">
+        <div class="stat-info">
+          <span class="stat-label">Total Usage:</span>
+          <span class="stat-val" id="textTotalUsage">0 MB / 1 GB</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="barUsageFill" style="width: 0%;"></div>
+        </div>
+        <div class="status-pill" id="badgeDbStatus">
+          <i class="fa-solid fa-circle-dot"></i> Connecting DB...
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 2. MAIN WORKSPACE (Upload & Editor Section) -->
+    <!-- ========================================== -->
+    <main class="workspace-grid">
+
+      <!-- LEFT COLUMN: Drag & Drop Zone -->
+      <section class="card glass-panel dropzone-card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-file-arrow-up icon-neon"></i> Image Upload Zone</h2>
+          <span class="badge-subtle" id="badgeCurrentMode">🌐 Public Cloud Link Mode</span>
+        </div>
+
+        <div class="dropzone" id="dropzoneArea">
+          <input type="file" id="fileInput" accept="image/*" class="file-input-hidden" multiple>
+          
+          <div class="dropzone-content">
+            <div class="upload-pulse-icon">
+              <i class="fa-solid fa-cloud-bolt"></i>
+            </div>
+            <h3>Drag & Drop Images Here</h3>
+            <p>PNG, JPG, WEBP, GIF files supported up to 25MB (Single & Batch Upload)</p>
+            
+            <div class="dropzone-divider"><span>OR</span></div>
+            
+            <button class="btn btn-primary btn-glow" id="btnBrowseFiles">
+              <i class="fa-solid fa-folder-open"></i> Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- Multiple Files Batch Queue Container -->
+        <div class="batch-queue-container hidden" id="batchQueueContainer">
+          <div class="batch-queue-header">
+            <span class="batch-title" id="batchQueueTitle"><i class="fa-solid fa-layer-group icon-neon"></i> Selected Files Batch (0)</span>
+            <button type="button" class="btn btn-sm btn-primary" id="btnUploadBatchAll">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Upload All (0 Files)
+            </button>
+          </div>
+          <div class="batch-files-list" id="batchFilesList">
+            <!-- Selected file items injected via JS -->
+          </div>
+        </div>
+
+        <!-- Upload Progress Status Bar -->
+        <div class="upload-progress-container hidden" id="uploadProgressContainer">
+          <div class="progress-header">
+            <span id="uploadStatusText"><i class="fa-solid fa-spinner fa-spin"></i> Processing & Uploading...</span>
+            <span id="uploadPercentText">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill animated-glow" id="uploadProgressBar" style="width: 0%;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Interactive Image Editor & Security Panel -->
+      <section class="card glass-panel editor-card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-wand-magic-sparkles icon-neon"></i> AI Editor & Security Studio</h2>
+          <span class="badge-subtle">Live Canvas</span>
+        </div>
+
+        <div class="editor-workspace">
+          <!-- Canvas Crop Area -->
+          <div class="canvas-container" id="canvasContainer">
+            <div class="empty-canvas-placeholder" id="canvasPlaceholder">
+              <i class="fa-regular fa-image"></i>
+              <p>Upload or select an image to enable crop, AI filters, watermark & security options</p>
+            </div>
+            <img id="imageToCrop" src="" alt="Crop Target" class="crop-img-target hidden">
+          </div>
+
+          <!-- Controls Section -->
+          <div class="editor-controls disabled-overlay" id="editorControlsPanel">
+            
+            <!-- Custom File Name Input -->
+            <div class="control-group">
+              <label for="inputCustomFileName"><i class="fa-solid fa-pen-to-square"></i> Custom File Title (Optional):</label>
+              <input type="text" id="inputCustomFileName" class="custom-input" placeholder="e.g. My_Awesome_Vacation_Photo">
+            </div>
+
+            <!-- Crop Aspect Ratios & Social Media Presets -->
+            <div class="control-group">
+              <label><i class="fa-solid fa-crop"></i> Aspect Ratio & Social Media Frames:</label>
+              <div class="btn-group-row">
+                <button type="button" class="btn-sm btn-ratio active" data-ratio="NaN" title="Full Original Length">Full / Original</button>
+                <button type="button" class="btn-sm btn-ratio" data-ratio="1" title="Instagram Post / Square">📸 Insta 1:1</button>
+                <button type="button" class="btn-sm btn-ratio" data-ratio="0.5625" title="Story / Reel / TikTok">📱 9:16 Story/Reel</button>
+                <button type="button" class="btn-sm btn-ratio" data-ratio="1.77777777778" title="YouTube / Landscape">🎬 16:9 YouTube</button>
+                <button type="button" class="btn-sm btn-ratio" data-ratio="0.8" title="LinkedIn / FB Portrait">💼 4:5 Portrait</button>
+              </div>
+            </div>
+
+            <!-- Rotation & Transformations -->
+            <div class="control-group">
+              <label><i class="fa-solid fa-rotate"></i> Rotate & Flip:</label>
+              <div class="btn-group-row">
+                <button type="button" class="btn-sm btn-icon" id="btnRotateLeft" title="Rotate Left 90°"><i class="fa-solid fa-rotate-left"></i> -90°</button>
+                <button type="button" class="btn-sm btn-icon" id="btnRotateRight" title="Rotate Right 90°"><i class="fa-solid fa-rotate-right"></i> +90°</button>
+                <button type="button" class="btn-sm btn-icon" id="btnFlipH" title="Flip Horizontal"><i class="fa-solid fa-arrows-left-right"></i> Flip H</button>
+              </div>
+            </div>
+
+            <!-- AI Filter Presets & Watermark Overlay -->
+            <div class="control-grid">
+              <div class="control-group">
+                <label for="selectFilterPreset"><i class="fa-solid fa-palette"></i> AI Preset Filter:</label>
+                <select id="selectFilterPreset" class="custom-select">
+                  <option value="none" selected>None (Original Colors)</option>
+                  <option value="cinematic">🎬 Cinematic Mood</option>
+                  <option value="vintage">📼 Vintage Retro</option>
+                  <option value="cyberpunk">🌃 Cyberpunk Glow</option>
+                  <option value="grayscale">🏁 Black & White</option>
+                  <option value="sepia">📜 Classic Sepia</option>
+                  <option value="hdr">✨ HDR Vibrant</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="inputWatermarkText"><i class="fa-solid fa-stamp"></i> Watermark Text:</label>
+                <input type="text" id="inputWatermarkText" class="custom-input" placeholder="e.g. © PixelVault Pro">
+              </div>
+            </div>
+
+            <!-- Security, Password & Expiration Settings -->
+            <div class="control-grid">
+              <div class="control-group">
+                <label for="inputLinkPassword"><i class="fa-solid fa-lock"></i> Link Password (Optional):</label>
+                <input type="password" id="inputLinkPassword" class="custom-input" placeholder="Set password lock...">
+              </div>
+
+              <div class="control-group">
+                <label for="selectLinkExpiry"><i class="fa-solid fa-hourglass-half"></i> Link Expiration:</label>
+                <select id="selectLinkExpiry" class="custom-select">
+                  <option value="0" selected>Never Expires</option>
+                  <option value="1">⏱️ 24 Hours (1 Day)</option>
+                  <option value="7">⏱️ 7 Days</option>
+                  <option value="30">⏱️ 30 Days</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Album Folder & Visibility -->
+            <div class="control-grid">
+              <div class="control-group">
+                <label for="selectAlbumFolder"><i class="fa-solid fa-folder-closed"></i> Album Folder:</label>
+                <select id="selectAlbumFolder" class="custom-select">
+                  <option value="General" selected>📁 General</option>
+                  <option value="Personal">🔒 Personal Vault</option>
+                  <option value="Work">💼 Work Projects</option>
+                  <option value="Social Media">📲 Social Media</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="selectFormat"><i class="fa-solid fa-file-export"></i> Target Format & Compression:</label>
+                <select id="selectFormat" class="custom-select">
+                  <option value="webp" selected>WebP (Ultra Small)</option>
+                  <option value="png">PNG (Lossless)</option>
+                  <option value="jpeg">JPG (Standard)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Compression Quality Slider -->
+            <div class="control-group">
+              <div class="label-row">
+                <label for="rangeQuality"><i class="fa-solid fa-sliders"></i> Compression Quality:</label>
+                <span class="value-badge" id="valQualityText">80%</span>
+              </div>
+              <input type="range" id="rangeQuality" min="10" max="100" value="80" class="custom-slider">
+            </div>
+
+            <!-- Process & Save Action Button -->
+            <button class="btn btn-success btn-glow btn-full" id="btnSaveAndUpload">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Process & Save Upload
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 3. GALLERY DASHBOARD SECTION -->
+    <!-- ========================================== -->
+    <section class="gallery-section card glass-panel">
+      <div class="gallery-toolbar">
+        <div class="toolbar-left">
+          <h2><i class="fa-solid fa-photo-film icon-neon"></i> Image Store Gallery</h2>
+          <span class="badge-count" id="textImageCount">0 Items</span>
+          
+          <!-- Bulk ZIP Actions -->
+          <div class="bulk-actions-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="checkSelectAll"> Select All
+            </label>
+            <button class="btn btn-sm btn-primary hidden" id="btnDownloadZipSelected">
+              <i class="fa-solid fa-file-zipper"></i> Download Selected (.ZIP)
+            </button>
+          </div>
+        </div>
+
+        <!-- Toolbar Right Filters & Search -->
+        <div class="toolbar-right">
+          <!-- Live Search Bar -->
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="inputSearch" placeholder="Search images by name...">
+          </div>
+
+          <!-- Album Filter Pills -->
+          <div class="filter-pills" id="albumFilterPills">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="General">📁 General</button>
+            <button class="filter-pill" data-filter="Personal">🔒 Personal</button>
+            <button class="filter-pill" data-filter="Work">💼 Work</button>
+            <button class="filter-pill" data-filter="Social Media">📲 Social</button>
+          </div>
+
+          <!-- Sort Dropdown -->
+          <select id="selectSort" class="custom-select select-sm">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="views-desc">Most Viewed</option>
+            <option value="size-desc">Largest Size</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Gallery Grid Container -->
+      <div class="gallery-grid" id="galleryContainer">
+        <div class="empty-gallery-state" id="emptyGalleryState">
+          <div class="empty-icon"><i class="fa-solid fa-images"></i></div>
+          <h3>Abhi tak koi photo upload nahi hui hai</h3>
+          <p>Upar diye gaye Drag & Drop zone mein apni images add karein!</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 4. EMBED CODE & QR CODE MODAL -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop hidden" id="embedModal">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-code icon-neon"></i> Shareable Link, Embed & QR Code</h3>
+        <button class="btn-close" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-preview-grid">
+          <div class="modal-preview-box">
+            <img id="modalPreviewImg" src="" alt="Preview">
+          </div>
+          <!-- Live QR Code Canvas Box -->
+          <div class="qr-code-box">
+            <canvas id="qrCodeCanvas"></canvas>
+            <p><i class="fa-solid fa-qrcode"></i> Scan on Mobile Camera</p>
+            <button class="btn btn-sm btn-primary" id="btnDownloadQr">
+              <i class="fa-solid fa-download"></i> Save QR
+            </button>
+          </div>
+        </div>
+
+        <div class="embed-fields">
+          <!-- 1. Direct Shareable Link -->
+          <div class="embed-group">
+            <label><i class="fa-solid fa-link"></i> Direct Shareable URL (Worldwide):</label>
+            <div class="input-copy-row">
+              <input type="text" id="inputDirectUrl" readonly class="input-readonly">
+              <button class="btn btn-primary btn-copy" data-target="inputDirectUrl">
+                <i class="fa-solid fa-copy"></i> Copy Link
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. HTML Embed Code -->
+          <div class="embed-group">
+            <label><i class="fa-solid fa-code"></i> HTML Embed Tag (&lt;img&gt;):</label>
+            <div class="input-copy-row">
+              <input type="text" id="inputHtmlEmbed" readonly class="input-readonly">
+              <button class="btn btn-primary btn-copy" data-target="inputHtmlEmbed">
+                <i class="fa-solid fa-copy"></i> Copy HTML
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Markdown Embed Code -->
+          <div class="embed-group">
+            <label><i class="fa-brands fa-markdown"></i> Markdown Code (![alt](url)):</label>
+            <div class="input-copy-row">
+              <input type="text" id="inputMarkdownEmbed" readonly class="input-readonly">
+              <button class="btn btn-primary btn-copy" data-target="inputMarkdownEmbed">
+                <i class="fa-solid fa-copy"></i> Copy Markdown
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 5. FULL SIZE LIGHTBOX VIEW MODAL -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop hidden" id="lightboxModal">
+    <div class="lightbox-content glass-panel">
+      <div class="lightbox-header">
+        <div class="lightbox-title-info">
+          <h3 id="lightboxTitle"><i class="fa-regular fa-image icon-neon"></i> Full View</h3>
+          <span class="badge-subtle" id="lightboxMetaInfo">1920x1080px | 1.2 MB</span>
+        </div>
+        <div class="lightbox-actions">
+          <button type="button" id="btnLightboxDownload" class="btn btn-sm btn-primary">
+            <i class="fa-solid fa-download"></i> Download Full Resolution
+          </button>
+          <button class="btn-close" id="btnCloseLightbox"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="lightbox-image-container">
+        <img id="lightboxFullImg" src="" alt="Full Resolution Image">
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 6. PASSWORD PROTECTION VERIFICATION MODAL -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop hidden" id="passwordModal">
+    <div class="modal-content glass-panel modal-sm">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-lock icon-neon"></i> Protected Image</h3>
+        <button class="btn-close" id="btnClosePasswordModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Is photo ko access karne ke liye password enter karein:</p>
+        <input type="password" id="inputVerifyPassword" class="custom-input" placeholder="Enter password...">
+        <button class="btn btn-primary btn-full" id="btnVerifySubmitPassword" style="margin-top: 14px;">
+          <i class="fa-solid fa-key"></i> Unlock Image
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- CDNs for Cropper.js, QRious (QR Generator), JSZip (ZIP Archiver) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Custom JavaScript Files -->
+  <script src="js/editor.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
